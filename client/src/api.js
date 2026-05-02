@@ -1,12 +1,13 @@
 import axios from "axios";
 
-// 🔥 production backend URL
-const BASE_URL = "https://personal-portfolio-4sz6.onrender.com/api";
+// 🔥 backend URL (production + fallback for local)
+const BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  "https://personal-portfolio-4sz6.onrender.com/api";
 
 // axios instance
 const api = axios.create({
   baseURL: BASE_URL,
-  withCredentials: true,
 });
 
 // 🔐 token attach
@@ -20,7 +21,7 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// ❌ error handling (optional but useful)
+// ❌ error handling
 api.interceptors.response.use(
   (response) => response,
   (error) => {
