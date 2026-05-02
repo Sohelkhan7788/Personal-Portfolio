@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import axios from 'axios';
+import api from '../api'; // ✅ axios instance use
 
 const fallbackCertifications = [
   {
@@ -9,7 +9,7 @@ const fallbackCertifications = [
     issuer: 'Red Hat',
     issueDate: 'Oct 2024',
     expiryDate: 'Oct 2027',
-    credentialUrl: 'https://www.credly.com/badges/cc25ab36-435d-481c-a024-97674f83a174', // 👉 apna actual link daalna
+    credentialUrl: 'https://www.credly.com/badges/cc25ab36-435d-481c-a024-97674f83a174',
   },
   {
     _id: '2',
@@ -17,7 +17,7 @@ const fallbackCertifications = [
     issuer: 'MongoDB',
     issueDate: 'Jun 2024',
     expiryDate: '',
-    credentialUrl: 'https://learn.mongodb.com/c/SjwAyD6hTsa2IMwvVG8flg', // 👉 apna link
+    credentialUrl: 'https://learn.mongodb.com/c/SjwAyD6hTsa2IMwvVG8flg',
   },
   {
     _id: '3',
@@ -25,7 +25,8 @@ const fallbackCertifications = [
     issuer: 'Google',
     issueDate: 'May 2024',
     expiryDate: 'Dec 2034',
-    credentialUrl: 'https://www.credly.com/badges/a45d8892-83a1-4413-bcb5-3882f1702d9f/linked_in_profile', // 👉 apna link
+    credentialUrl:
+      'https://www.credly.com/badges/a45d8892-83a1-4413-bcb5-3882f1702d9f/linked_in_profile',
   },
   {
     _id: '4',
@@ -33,18 +34,24 @@ const fallbackCertifications = [
     issuer: 'Udemy',
     issueDate: '2023',
     expiryDate: '',
-    credentialUrl: 'https://www.skills.google/public_profiles/65c5560c-c085-406f-b534-ac029c927819/badges/8866792', // 👉 apna link
-  }
+    credentialUrl:
+      'https://www.skills.google/public_profiles/65c5560c-c085-406f-b534-ac029c927819/badges/8866792',
+  },
 ];
 
 const Certifications = () => {
   const [certs, setCerts] = useState([]);
 
   useEffect(() => {
-    axios
-      .get('http://localhost:5000/api/certifications')
-      .then((res) => setCerts(res.data.length ? res.data : fallbackCertifications))
-      .catch(() => setCerts(fallbackCertifications));
+    api
+      .get('/certifications') // ✅ production safe
+      .then((res) => {
+        setCerts(res.data?.length ? res.data : fallbackCertifications);
+      })
+      .catch((err) => {
+        console.error('Certifications API error:', err);
+        setCerts(fallbackCertifications);
+      });
   }, []);
 
   return (
@@ -103,9 +110,13 @@ const Certifications = () => {
 
               {/* Dates */}
               <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1 mb-4">
-                <p><span className="font-medium">Issued:</span> {cert.issueDate}</p>
+                <p>
+                  <span className="font-medium">Issued:</span> {cert.issueDate}
+                </p>
                 {cert.expiryDate && (
-                  <p><span className="font-medium">Expires:</span> {cert.expiryDate}</p>
+                  <p>
+                    <span className="font-medium">Expires:</span> {cert.expiryDate}
+                  </p>
                 )}
               </div>
 

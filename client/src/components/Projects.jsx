@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { FaGithub, FaExternalLinkAlt } from 'react-icons/fa';
-import axios from 'axios';
+import api from '../api'; // ✅ FIXED
 
 const techColors = {
   HTML: 'bg-orange-100 text-orange-600',
@@ -40,10 +40,9 @@ const Projects = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get('/api/projects')
-      .then(r => {
-        console.log("PROJECTS:", r.data);
-        setProjects(r.data.length ? r.data : fallbackProjects);
+    api.get('/projects') // ✅ FIXED
+      .then((res) => {
+        setProjects(res.data?.length ? res.data : fallbackProjects);
       })
       .catch(() => setProjects(fallbackProjects))
       .finally(() => setLoading(false));
@@ -51,8 +50,7 @@ const Projects = () => {
 
   return (
     <section id="projects" className="py-24 relative">
-      
-      {/* Watermark */}
+
       <div className="watermark absolute top-0 right-0 select-none">
         Projects
       </div>
@@ -83,7 +81,6 @@ const Projects = () => {
           </div>
         ) : (
 
-          /* Grid */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
 
             {projects.map((project, i) => (
@@ -93,48 +90,37 @@ const Projects = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="group bg-white dark:bg-dark-card rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 border border-gray-100 dark:border-gray-800"
+                className="group bg-white dark:bg-dark-card rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 border"
               >
 
                 {/* IMAGE */}
                 <div className="h-48 relative overflow-hidden bg-gradient-to-br from-gray-800 to-gray-900">
                   
                   {project.image ? (
-                    <img
-                      src={project.image}
-                      alt={project.title}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
+                    <img src={project.image} alt={project.title}
+                      className="w-full h-full object-cover group-hover:scale-110 transition" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <span className="text-5xl font-black text-white/20">
+                      <span className="text-5xl text-white/20">
                         {project.title?.[0]}
                       </span>
                     </div>
                   )}
 
-                  {/* 🔥 Overlay Buttons */}
-                  <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-5">
+                  {/* Overlay */}
+                  <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 flex justify-center items-center gap-5">
 
                     {project.githubUrl && (
-                      <a
-                        href={project.githubUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="w-12 h-12 bg-white rounded-full flex items-center justify-center hover:scale-110 transition"
-                      >
-                        <FaGithub size={20} />
+                      <a href={project.githubUrl} target="_blank" rel="noreferrer"
+                        className="w-12 h-12 bg-white rounded-full flex justify-center items-center">
+                        <FaGithub />
                       </a>
                     )}
 
                     {project.liveUrl && (
-                      <a
-                        href={project.liveUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="w-12 h-12 bg-white rounded-full flex items-center justify-center hover:scale-110 transition"
-                      >
-                        <FaExternalLinkAlt size={18} />
+                      <a href={project.liveUrl} target="_blank" rel="noreferrer"
+                        className="w-12 h-12 bg-white rounded-full flex justify-center items-center">
+                        <FaExternalLinkAlt />
                       </a>
                     )}
 
@@ -147,19 +133,16 @@ const Projects = () => {
                     {project.title}
                   </h3>
 
-                  <p className="text-gray-500 dark:text-gray-400 text-sm mb-4 line-clamp-2">
+                  <p className="text-gray-500 text-sm mb-4">
                     {project.description}
                   </p>
 
-                  {/* TECH TAGS */}
                   <div className="flex flex-wrap gap-2">
                     {(project.technologies || []).map(tech => (
-                      <span
-                        key={tech}
-                        className={`text-xs font-medium px-2 py-1 rounded-lg ${
-                          techColors[tech] || 'bg-gray-100 text-gray-600'
-                        }`}
-                      >
+                      <span key={tech}
+                        className={`text-xs px-2 py-1 rounded ${
+                          techColors[tech] || 'bg-gray-100'
+                        }`}>
                         {tech}
                       </span>
                     ))}
@@ -168,7 +151,6 @@ const Projects = () => {
 
               </motion.div>
             ))}
-
           </div>
         )}
       </div>
