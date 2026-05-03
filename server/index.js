@@ -8,10 +8,15 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173", // local frontend
+      "https://your-netlify-url.netlify.app", // 🔥 apna netlify URL daalna
+    ],
+    credentials: true,
+  }),
+);
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 

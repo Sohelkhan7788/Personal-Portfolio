@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { HiFolder, HiPlus, HiPencil, HiTrash, HiX } from 'react-icons/hi';
 import toast from 'react-hot-toast';
-import api from '../api'; // 🔥 IMPORTANT CHANGE
+import api from '../api';
 
 const emptyForm = {
   title: '',
@@ -22,118 +22,82 @@ const AdminProjects = () => {
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [editId, setEditId] = useState(null);
-  const [saving, setSaving] = useState(false);
 
   const fetchProjects = () => {
     setLoading(true);
-    api.get('/projects/admin/all') // 🔥 FIX
-      .then(r => {
-        console.log("PROJECTS:", r.data);
-        setProjects(r.data);
-      })
-      .catch(() => toast.error('Failed to load projects'))
+    api.get('/projects/admin/all')
+      .then(r => setProjects(r.data))
+      .catch(() => toast.error('Failed to load'))
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => {
-    fetchProjects();
-  }, []);
-
-  const openAdd = () => {
-    setForm(emptyForm);
-    setEditId(null);
-    setShowModal(true);
-  };
-
-  const openEdit = (p) => {
-    setForm({
-      ...p,
-      technologies: p.technologies.join(', ')
-    });
-    setEditId(p._id);
-    setShowModal(true);
-  };
+  useEffect(() => { fetchProjects(); }, []);
 
   const handleSave = async (e) => {
     e.preventDefault();
-    setSaving(true);
+
+    const data = {
+      ...form,
+      technologies: form.technologies.split(',').map(t => t.trim())
+    };
 
     try {
-      const data = {
-        ...form,
-        technologies: form.technologies
-          .split(',')
-          .map(t => t.trim())
-          .filter(Boolean)
-      };
-
       if (editId) {
         await api.put(`/projects/${editId}`, data);
-        toast.success('Project updated!');
+        toast.success('Updated!');
       } else {
         await api.post('/projects', data);
-        toast.success('Project added!');
+        toast.success('Added!');
       }
-
       setShowModal(false);
       fetchProjects();
-
     } catch {
-      toast.error('Failed to save');
-    } finally {
-      setSaving(false);
+      toast.error('Failed');
     }
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('Delete this project?')) return;
-
-    try {
-      await api.delete(`/projects/${id}`);
-      toast.success('Deleted!');
-      fetchProjects();
-    } catch {
-      toast.error('Failed to delete');
-    }
+    if (!confirm('Delete?')) return;
+    await api.delete(`/projects/${id}`);
+    fetchProjects();
   };
 
   return (
-    <div>
+    <div className="px-3 sm:px-6">
+
       {/* HEADER */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row justify-between gap-3 mb-6">
         <div>
-          <h2 className="text-2xl font-black dark:text-white">Projects</h2>
-          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
-            Manage your portfolio projects
-          </p>
+          <h2 className="text-xl sm:text-2xl font-black">Projects</h2>
+          <p className="text-gray-500 text-sm">Manage your portfolio projects</p>
         </div>
 
-        <button onClick={openAdd}
-          className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-semibold hover:scale-105">
-          <HiPlus size={20}/> Add Project
+        <button onClick={() => { setShowModal(true); setEditId(null); setForm(emptyForm); }}
+          className="flex items-center justify-center gap-2 bg-primary text-white px-4 py-2.5 rounded-xl font-semibold w-full sm:w-auto">
+          <HiPlus /> Add Project
         </button>
       </div>
 
-      {/* LIST */}
+      {/* GRID */}
       {loading ? (
         <p>Loading...</p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {projects.map((p) => (
             <div key={p._id}
-              className="bg-white dark:bg-[#1e2a4a] rounded-2xl p-5 flex gap-4 shadow">
+              className="bg-white dark:bg-[#1e2a4a] rounded-2xl p-4 sm:p-5 flex gap-3 shadow">
 
-              <div className="w-14 h-14 bg-gray-200 rounded-xl flex items-center justify-center font-bold text-primary">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gray-200 rounded-xl flex items-center justify-center font-bold text-primary">
                 {p.title?.[0]}
               </div>
 
               <div className="flex-1">
-                <h3 className="font-bold dark:text-white">{p.title}</h3>
-                <p className="text-sm text-gray-500">{p.description}</p>
+                <h3 className="font-bold text-sm sm:text-base dark:text-white">{p.title}</h3>
+                <p className="text-xs sm:text-sm text-gray-500">{p.description}</p>
               </div>
 
-              <div className="flex flex-col gap-2">
-                <button onClick={() => openEdit(p)}>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <button onClick={() => { setForm({...p, technologies: p.technologies.join(', ') }); setEditId(p._id); setShowModal(true); }}>
                   <HiPencil />
                 </button>
                 <button onClick={() => handleDelete(p._id)}>
@@ -145,21 +109,10 @@ const AdminProjects = () => {
         </div>
       )}
 
-      {/* EMPTY */}
-      {projects.length === 0 && !loading && (
-        <div className="text-center py-10 text-gray-400">
-          <HiFolder size={40} className="mx-auto mb-2"/>
-          No projects
-        </div>
-      )}
-
       {/* MODAL */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center"
-          onClick={() => setShowModal(false)}>
-
-          <div className="bg-white p-6 rounded-xl w-full max-w-md"
-            onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#1e2a4a] p-4 sm:p-6 rounded-xl w-full max-w-md mx-2">
 
             <h3 className="text-lg font-bold mb-4">
               {editId ? 'Edit' : 'Add'} Project
@@ -177,7 +130,7 @@ const AdminProjects = () => {
                 onChange={e => setForm({...form, description: e.target.value})}
                 className="w-full p-2 border rounded" />
 
-              <input placeholder="Technologies (comma)"
+              <input placeholder="Technologies"
                 value={form.technologies}
                 onChange={e => setForm({...form, technologies: e.target.value})}
                 className="w-full p-2 border rounded" />
@@ -190,13 +143,14 @@ const AdminProjects = () => {
               </select>
 
               <button className="w-full bg-primary text-white py-2 rounded">
-                {saving ? 'Saving...' : 'Save'}
+                Save
               </button>
 
             </form>
           </div>
         </div>
       )}
+
     </div>
   );
 };

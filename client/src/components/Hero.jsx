@@ -58,7 +58,6 @@ const Hero = () => {
                 sequence={[
                   'Full Stack Dev', 2000,
                   'MERN Developer', 2000,
-                  'UI/UX Designer', 2000,
                   'Problem Solver', 2000,
                 ]}
                 wrapper="span"
@@ -77,7 +76,7 @@ const Hero = () => {
               {[
                 { num: '3+', label: 'Projects' },
                 { num: '5+', label: 'Certifications' },
-                { num: 'Fresher', label: 'Years Exp.' },
+                { num: 'Fresher', label: 'Graduate' },
               ].map(stat => (
                 <div key={stat.label}>
                   <div className="text-2xl sm:text-3xl font-black text-primary">{stat.num}</div>

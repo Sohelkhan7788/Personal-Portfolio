@@ -25,8 +25,7 @@ router.get("/", async (req, res) => {
 router.get("/admin/all", auth, async (req, res) => {
   try {
     const projects = await Project.find().sort({ order: 1, createdAt: -1 });
-
-    res.json(projects);
+    res.json(projects); // ✅ ALWAYS ARRAY
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -53,17 +52,9 @@ router.get("/:id", async (req, res) => {
 router.post("/", auth, async (req, res) => {
   try {
     const newProject = new Project(req.body);
-
     const savedProject = await newProject.save();
 
-    // 🔥 IMPORTANT: full updated list bhej
-    const allProjects = await Project.find().sort({ order: 1, createdAt: -1 });
-
-    res.status(201).json({
-      message: "Project created",
-      project: savedProject,
-      projects: allProjects, // 👈 ye frontend ko help karega
-    });
+    res.status(201).json(savedProject); // ✅ ONLY CREATED OBJECT
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -81,26 +72,20 @@ router.put("/:id", auth, async (req, res) => {
 
     if (!updated) return res.status(404).json({ message: "Project not found" });
 
-    res.json(updated);
+    res.json(updated); // ✅ ONLY UPDATED OBJECT
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
 });
 
 // ==============================
-// DELETE project
+// DELETE project (FIXED)
 // ==============================
 router.delete("/:id", auth, async (req, res) => {
   try {
     await Project.findByIdAndDelete(req.params.id);
 
-    // 🔥 return updated list after delete
-    const projects = await Project.find().sort({ order: 1, createdAt: -1 });
-
-    res.json({
-      message: "Project deleted",
-      projects,
-    });
+    res.json({ message: "Project deleted" }); // ✅ SIMPLE RESPONSE
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
