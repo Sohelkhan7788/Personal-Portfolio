@@ -7,19 +7,17 @@ const User = require("../models/User");
 const auth = require("../middleware/auth");
 
 // ==============================
-// 🔥 SEED ADMIN (FIXED)
+// 🔥 SEED ADMIN (ALWAYS FRESH)
 // ==============================
 router.get("/seed", async (req, res) => {
   try {
     const email = process.env.ADMIN_EMAIL || "sohel@admin.com";
     const password = process.env.ADMIN_PASSWORD || "Admin@123";
 
-    const existing = await User.findOne({ email });
-    if (existing) {
-      return res.json({ message: "Admin already exists" });
-    }
+    // 🔥 OLD USER DELETE (IMPORTANT)
+    await User.deleteMany({ email });
 
-    // 🔥 HASH PASSWORD (IMPORTANT FIX)
+    // 🔥 HASH PASSWORD
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const admin = new User({
@@ -34,7 +32,7 @@ router.get("/seed", async (req, res) => {
     res.json({
       message: "Admin created successfully",
       email,
-      password, // ⚠️ dev only (production में हटा देना)
+      password, // dev only
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -42,24 +40,29 @@ router.get("/seed", async (req, res) => {
 });
 
 // ==============================
-// 🔥 LOGIN (WORKING)
+// 🔥 LOGIN (WITH DEBUG)
 // ==============================
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
+
+    console.log("ENTERED PASSWORD:", password);
+    console.log("DB HASH:", user?.password);
+
     if (!user) {
-      return res.status(400).json({ message: "Invalid credentials" });
+      return res.status(400).json({ message: "User not found" });
     }
 
-    // 🔥 PASSWORD MATCH
     const isMatch = await bcrypt.compare(password, user.password);
+
+    console.log("MATCH RESULT:", isMatch);
+
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    // 🔥 TOKEN
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "7d",
     });
