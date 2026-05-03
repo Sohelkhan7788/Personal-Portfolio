@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { HiPlus, HiPencil, HiTrash, HiX, HiBadgeCheck } from 'react-icons/hi';
 import toast from 'react-hot-toast';
-import api from '../api';
+import api from '../api'; // ✅ already present
 
 const emptyForm = { title: '', issuer: '', issueDate: '', expiryDate: '', credentialUrl: '', credentialId: '', status: 'published' };
 
 const AdminCertifications = () => {
-  const [certs, setCerts] = useState([]); // ✅ ALWAYS ARRAY
+  const [certs, setCerts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState(emptyForm);
@@ -16,11 +16,12 @@ const AdminCertifications = () => {
 
   const fetch = () => {
     setLoading(true);
-    axios.get('/api/certifications/admin/all')
-      .then(r => {
-        console.log("CERT API:", r.data); // 🔥 DEBUG
 
-        // ✅ SAFE DATA HANDLING
+    // 🔥 FIX: axios → api
+    api.get('/certifications/admin/all')
+      .then(r => {
+        console.log("CERT API:", r.data);
+
         if (Array.isArray(r.data)) {
           setCerts(r.data);
         } else if (Array.isArray(r.data.data)) {
@@ -28,7 +29,7 @@ const AdminCertifications = () => {
         } else if (Array.isArray(r.data.certifications)) {
           setCerts(r.data.certifications);
         } else {
-          setCerts([]); // fallback
+          setCerts([]);
         }
       })
       .catch(() => {
@@ -48,10 +49,12 @@ const AdminCertifications = () => {
     setSaving(true);
     try {
       if (editId) {
-        await axios.put(`/api/certifications/${editId}`, form);
+        // 🔥 FIX
+        await api.put(`/certifications/${editId}`, form);
         toast.success('Updated!');
       } else {
-        await axios.post('/api/certifications', form);
+        // 🔥 FIX
+        await api.post('/certifications', form);
         toast.success('Added!');
       }
       setShowModal(false);
@@ -66,7 +69,8 @@ const AdminCertifications = () => {
   const handleDelete = async (id) => {
     if (!confirm('Delete this certification?')) return;
     try {
-      await axios.delete(`/api/certifications/${id}`);
+      // 🔥 FIX
+      await api.delete(`/certifications/${id}`);
       toast.success('Deleted!');
       fetch();
     } catch {
