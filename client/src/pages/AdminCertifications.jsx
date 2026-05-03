@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import api from "../api"; // ✅ IMPORTANT FIX
+import api from "../api";
 import toast from "react-hot-toast";
+import { HiPlus } from "react-icons/hi";
 
 const AdminCertifications = () => {
   const [certs, setCerts] = useState([]);
@@ -14,16 +15,13 @@ const AdminCertifications = () => {
   });
 
   // ==============================
-  // 🔥 FETCH CERTIFICATIONS
+  // 🔥 FETCH
   // ==============================
   const fetchCerts = async () => {
     try {
       const res = await api.get("/certifications");
-      console.log("CERT API:", res.data);
-
       setCerts(res.data || []);
     } catch (err) {
-      console.error(err);
       toast.error("Failed to fetch certifications");
     } finally {
       setLoading(false);
@@ -35,64 +33,64 @@ const AdminCertifications = () => {
   }, []);
 
   // ==============================
-  // 🔥 ADD CERTIFICATION
+  // 🔥 ADD
   // ==============================
   const handleAdd = async (e) => {
     e.preventDefault();
-
     try {
       await api.post("/certifications", form);
       toast.success("Certification added");
-
       setShowModal(false);
-      setForm({
-        title: "",
-        issuer: "",
-        link: "",
-      });
-
+      setForm({ title: "", issuer: "", link: "" });
       fetchCerts();
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error("Failed to add certification");
     }
   };
 
   return (
-    <div className="p-4">
-      <h1 className="text-xl font-bold">Certifications</h1>
+    <div className="min-h-screen bg-gray-900 text-white p-6">
+      
+      {/* HEADER */}
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold">Certifications</h1>
+          <p className="text-gray-400 text-sm">
+            {certs.length} total certifications
+          </p>
+        </div>
 
-      {/* ADD BUTTON */}
-      <button
-        onClick={() => setShowModal(true)}
-        className="bg-red-500 text-white px-4 py-2 mt-4 rounded-lg"
-      >
-        Add Certification
-      </button>
+        <button
+          onClick={() => setShowModal(true)}
+          className="flex items-center gap-2 bg-primary px-4 py-2 rounded-xl shadow-lg hover:scale-105 transition"
+        >
+          <HiPlus /> Add Certification
+        </button>
+      </div>
 
       {/* LIST */}
       {loading ? (
-        <p className="mt-4">Loading...</p>
+        <p>Loading...</p>
       ) : certs.length === 0 ? (
-        <p className="mt-4 text-gray-500">No certifications found</p>
+        <p className="text-gray-400">No certifications found</p>
       ) : (
-        <div className="mt-4 space-y-2">
+        <div className="grid gap-4">
           {certs.map((c) => (
             <div
               key={c._id}
-              className="border p-3 rounded-lg bg-white shadow"
+              className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-4 shadow-lg"
             >
-              <p className="font-semibold">{c.title}</p>
-              <p className="text-sm text-gray-500">{c.issuer}</p>
+              <h3 className="font-semibold text-lg">{c.title}</h3>
+              <p className="text-gray-400 text-sm">{c.issuer}</p>
 
               {c.link && (
                 <a
                   href={c.link}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-blue-500 text-sm"
+                  className="text-primary text-sm mt-2 inline-block"
                 >
-                  View Certificate
+                  View Certificate →
                 </a>
               )}
             </div>
@@ -101,16 +99,18 @@ const AdminCertifications = () => {
       )}
 
       {/* ==============================
-          🔥 MODAL
+          🔥 MODAL (PREMIUM)
       ============================== */}
       {showModal && (
-        <div className="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-white p-6 rounded-xl w-full max-w-sm">
-            <h2 className="text-lg font-bold mb-4">
+        <div className="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center px-4">
+          <div className="bg-[#111827] border border-white/10 rounded-2xl p-6 w-full max-w-md shadow-2xl">
+
+            <h2 className="text-xl font-bold mb-4">
               Add Certification
             </h2>
 
-            <form onSubmit={handleAdd} className="space-y-3">
+            <form onSubmit={handleAdd} className="space-y-4">
+
               <input
                 type="text"
                 placeholder="Title"
@@ -118,7 +118,7 @@ const AdminCertifications = () => {
                 onChange={(e) =>
                   setForm({ ...form, title: e.target.value })
                 }
-                className="border w-full p-2 rounded"
+                className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/10 focus:ring-2 focus:ring-primary outline-none"
                 required
               />
 
@@ -129,7 +129,7 @@ const AdminCertifications = () => {
                 onChange={(e) =>
                   setForm({ ...form, issuer: e.target.value })
                 }
-                className="border w-full p-2 rounded"
+                className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/10 focus:ring-2 focus:ring-primary outline-none"
               />
 
               <input
@@ -139,12 +139,12 @@ const AdminCertifications = () => {
                 onChange={(e) =>
                   setForm({ ...form, link: e.target.value })
                 }
-                className="border w-full p-2 rounded"
+                className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/10 focus:ring-2 focus:ring-primary outline-none"
               />
 
               <button
                 type="submit"
-                className="bg-green-500 text-white w-full py-2 rounded"
+                className="w-full bg-primary py-3 rounded-lg font-semibold hover:scale-[1.02] transition shadow-lg"
               >
                 Save
               </button>
@@ -152,7 +152,7 @@ const AdminCertifications = () => {
 
             <button
               onClick={() => setShowModal(false)}
-              className="mt-3 text-red-500 w-full"
+              className="mt-4 text-red-400 text-sm w-full"
             >
               Close
             </button>
