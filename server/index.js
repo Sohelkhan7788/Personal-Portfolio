@@ -12,7 +12,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173", // local frontend
-      "https://your-netlify-url.netlify.app", // 🔥 apna netlify URL daalna
+      "https://portfolio-1212.netlify.app", // 🔥 apna netlify URL daalna
     ],
     credentials: true,
   }),
