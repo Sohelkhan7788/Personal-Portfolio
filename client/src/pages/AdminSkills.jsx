@@ -1,183 +1,96 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { HiPlus, HiPencil, HiTrash, HiX } from 'react-icons/hi';
-import toast from 'react-hot-toast';
-import api from '../api';
-
-const emptyForm = { name: '', category: 'frontend', proficiency: 80 };
-
-const categoryOptions = ['frontend', 'backend', 'database', 'devops', 'tools', 'other'];
+import { useState, useEffect } from "react";
+import api from "../api"; // ✅ FIX
+import toast from "react-hot-toast";
 
 const AdminSkills = () => {
   const [skills, setSkills] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [form, setForm] = useState(emptyForm);
-  const [editId, setEditId] = useState(null);
-  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({ name: "" });
 
-  const fetch = () => {
-    setLoading(true);
-
-    // 🔥 FIX: axios → api
-    api.get('/skills')
-      .then(r => {
-        console.log("SKILLS API:", r.data);
-
-        if (Array.isArray(r.data)) {
-          setSkills(r.data);
-        } else if (Array.isArray(r.data.data)) {
-          setSkills(r.data.data);
-        } else if (Array.isArray(r.data.skills)) {
-          setSkills(r.data.skills);
-        } else {
-          setSkills([]);
-        }
-      })
-      .catch(() => {
-        toast.error('Failed to load');
-        setSkills([]);
-      })
-      .finally(() => setLoading(false));
-  };
-
-  useEffect(() => { fetch(); }, []);
-
-  const openAdd = () => {
-    setForm(emptyForm);
-    setEditId(null);
-    setShowModal(true);
-  };
-
-  const openEdit = (s) => {
-    setForm(s);
-    setEditId(s._id);
-    setShowModal(true);
-  };
-
-  const handleSave = async e => {
-    e.preventDefault();
-    setSaving(true);
+  // 🔥 FETCH SKILLS
+  const fetchSkills = async () => {
     try {
-      if (editId) {
-        // 🔥 FIX
-        await api.put(`/skills/${editId}`, form);
-        toast.success('Updated!');
-      } else {
-        // 🔥 FIX
-        await api.post('/skills', form);
-        toast.success('Added!');
-      }
-      setShowModal(false);
-      fetch();
-    } catch {
-      toast.error('Failed');
+      const res = await api.get("/skills");
+      console.log("SKILLS API:", res.data);
+      setSkills(res.data || []);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to fetch skills");
     } finally {
-      setSaving(false);
+      setLoading(false);
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!confirm('Delete this skill?')) return;
+  useEffect(() => {
+    fetchSkills();
+  }, []);
+
+  // 🔥 ADD SKILL
+  const handleAdd = async (e) => {
+    e.preventDefault();
     try {
-      // 🔥 FIX
-      await api.delete(`/skills/${id}`);
-      toast.success('Deleted!');
-      fetch();
-    } catch {
-      toast.error('Failed');
+      await api.post("/skills", form);
+      toast.success("Skill added");
+      setShowModal(false);
+      setForm({ name: "" });
+      fetchSkills();
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to add skill");
     }
   };
-
-  const grouped = categoryOptions.reduce((acc, cat) => {
-    const catSkills = skills.filter(s => s?.category === cat);
-    if (catSkills.length) acc[cat] = catSkills;
-    return acc;
-  }, {});
 
   return (
-    <div>
-      {/* SAME UI — untouched */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-2xl font-black dark:text-white">Skills</h2>
-          <p className="text-gray-500 text-sm mt-1 dark:text-gray-400">
-            Manage your technical skills
-          </p>
-        </div>
-        <button
-          onClick={openAdd}
-          className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-primary-dark transition-all hover:scale-105"
-        >
-          <HiPlus size={20}/> Add Skill
-        </button>
-      </div>
+    <div className="p-4">
+      <h1 className="text-xl font-bold">Skills</h1>
 
-      {/* बाकी UI untouched */}
+      <button
+        onClick={() => setShowModal(true)}
+        className="bg-red-500 text-white px-4 py-2 mt-4"
+      >
+        Add Skill
+      </button>
+
+      {/* LIST */}
       {loading ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {[1,2,3,4,5,6].map(i => (
-            <div key={i} className="h-20 rounded-2xl bg-gray-100 dark:bg-gray-800 animate-pulse"/>
-          ))}
-        </div>
+        <p>Loading...</p>
+      ) : skills.length === 0 ? (
+        <p>No skills found</p>
       ) : (
-        <div className="space-y-6">
-          {Object.keys(grouped).length > 0 ? (
-            Object.entries(grouped).map(([cat, catSkills]) => (
-              <div key={cat}>
-                <h3 className="font-bold text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3 capitalize">
-                  {cat}
-                </h3>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {catSkills.map((skill, i) => (
-                    <motion.div
-                      key={skill._id}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: i * 0.04 }}
-                      className="bg-white dark:bg-[#1e2a4a] rounded-xl p-4 border border-gray-100 dark:border-gray-800 flex items-center gap-3"
-                    >
-                      <div className="flex-1">
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="font-semibold text-sm dark:text-white">
-                            {skill.name}
-                          </span>
-                          <span className="text-xs font-bold text-primary">
-                            {skill.proficiency}%
-                          </span>
-                        </div>
-
-                        <div className="h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full">
-                          <div
-                            className="h-full bg-primary rounded-full"
-                            style={{ width: `${skill.proficiency}%` }}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col gap-1.5 flex-shrink-0">
-                        <button onClick={() => openEdit(skill)} className="p-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100">
-                          <HiPencil size={13}/>
-                        </button>
-                        <button onClick={() => handleDelete(skill._id)} className="p-1.5 rounded-lg bg-red-50 text-red-500 hover:bg-red-100">
-                          <HiTrash size={13}/>
-                        </button>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="text-center py-16 text-gray-400">
-              <p>No skills found</p>
-            </div>
-          )}
-        </div>
+        skills.map((s) => <div key={s._id}>{s.name}</div>)
       )}
 
-      {/* Modal same */}
+      {/* MODAL */}
+      {showModal && (
+        <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-xl w-full max-w-sm">
+            <h2 className="text-lg font-bold mb-4">Add Skill</h2>
+
+            <form onSubmit={handleAdd}>
+              <input
+                className="border w-full p-2 mb-4"
+                placeholder="Skill name"
+                value={form.name}
+                onChange={(e) =>
+                  setForm({ ...form, name: e.target.value })
+                }
+              />
+
+              <button className="bg-green-500 text-white px-4 py-2 w-full">
+                Save
+              </button>
+            </form>
+
+            <button
+              onClick={() => setShowModal(false)}
+              className="mt-3 text-red-500"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
