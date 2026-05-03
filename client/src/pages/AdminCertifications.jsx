@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { HiPlus, HiPencil, HiTrash, HiX, HiBadgeCheck } from 'react-icons/hi';
 import toast from 'react-hot-toast';
-import axios from 'axios';
+import api from '../api';
 
 const emptyForm = { title: '', issuer: '', issueDate: '', expiryDate: '', credentialUrl: '', credentialId: '', status: 'published' };
 

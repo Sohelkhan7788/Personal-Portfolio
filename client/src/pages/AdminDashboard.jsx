@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { HiFolder, HiBadgeCheck, HiCode, HiMail, HiTrendingUp } from 'react-icons/hi';
-import axios from 'axios';
+import api from '../api';
 
 const StatCard = ({ title, value, icon, color, path, delay }) => (
   <motion.div
