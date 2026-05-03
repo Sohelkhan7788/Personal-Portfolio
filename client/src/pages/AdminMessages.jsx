@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { HiMail, HiMailOpen, HiTrash, HiRefresh } from 'react-icons/hi';
 import toast from 'react-hot-toast';
-import api from '../../api'; // 🔥 FIXED
+import api from '../api'; // 🔥 FIXED
 
 const AdminMessages = () => {
   const [messages, setMessages] = useState([]);
