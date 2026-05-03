@@ -7,7 +7,7 @@ const User = require("../models/User");
 const auth = require("../middleware/auth");
 
 // ==============================
-// 🔥 SEED ADMIN (GET - browser se chalega)
+// 🔥 SEED ADMIN (FIXED)
 // ==============================
 router.get("/seed", async (req, res) => {
   try {
@@ -19,7 +19,7 @@ router.get("/seed", async (req, res) => {
       return res.json({ message: "Admin already exists" });
     }
 
-    // 🔥 HASH PASSWORD
+    // 🔥 HASH PASSWORD (IMPORTANT FIX)
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const admin = new User({
@@ -34,7 +34,7 @@ router.get("/seed", async (req, res) => {
     res.json({
       message: "Admin created successfully",
       email,
-      password, // (sirf dev ke liye show kar rahe, production me hata dena)
+      password, // ⚠️ dev only (production में हटा देना)
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -42,7 +42,7 @@ router.get("/seed", async (req, res) => {
 });
 
 // ==============================
-// 🔥 LOGIN
+// 🔥 LOGIN (WORKING)
 // ==============================
 router.post("/login", async (req, res) => {
   try {
