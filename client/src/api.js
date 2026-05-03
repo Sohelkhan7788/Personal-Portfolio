@@ -1,12 +1,7 @@
 import axios from "axios";
 
-// 🔥 ENV based URL
-const BASE_URL =
-  import.meta.env.VITE_API_URL ||
-  "https://personal-portfolio-4sz6.onrender.com/api";
-
 const api = axios.create({
-  baseURL: BASE_URL,
+  baseURL: import.meta.env.VITE_API_URL + "/api",
 });
 
 // 🔐 Attach token
