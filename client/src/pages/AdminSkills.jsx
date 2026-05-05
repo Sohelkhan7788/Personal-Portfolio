@@ -12,15 +12,11 @@ const AdminSkills = () => {
     name: "",
   });
 
-  // ==============================
-  // 🔥 FETCH SKILLS
-  // ==============================
   const fetchSkills = async () => {
     try {
       const res = await api.get("/skills");
-      setSkills(res.data || []);
+      setSkills(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
-      console.error(err);
       toast.error("Failed to fetch skills");
     } finally {
       setLoading(false);
@@ -31,35 +27,32 @@ const AdminSkills = () => {
     fetchSkills();
   }, []);
 
-  // ==============================
-  // 🔥 ADD SKILL
-  // ==============================
   const handleAdd = async (e) => {
     e.preventDefault();
-    try {
-      await api.post("/skills", form);
-      toast.success("Skill added");
 
+    if (!form.name.trim()) {
+      return toast.error("Skill name required");
+    }
+
+    try {
+      await api.post("/skills", { name: form.name.trim() });
+
+      toast.success("Skill added");
       setShowModal(false);
       setForm({ name: "" });
-
       fetchSkills();
     } catch (err) {
-      console.error(err);
-      toast.error("Failed to add skill");
+      console.error(err?.response?.data);
+      toast.error(err?.response?.data?.message || "Failed to add skill");
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-6">
-      
-      {/* HEADER */}
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold">Skills</h1>
-          <p className="text-gray-400 text-sm">
-            {skills.length} total skills
-          </p>
+          <p className="text-gray-400 text-sm">{skills.length} total</p>
         </div>
 
         <button
@@ -70,7 +63,6 @@ const AdminSkills = () => {
         </button>
       </div>
 
-      {/* LIST */}
       {loading ? (
         <p>Loading...</p>
       ) : skills.length === 0 ? (
@@ -78,55 +70,30 @@ const AdminSkills = () => {
       ) : (
         <div className="grid gap-3">
           {skills.map((s) => (
-            <div
-              key={s._id}
-              className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl px-4 py-3 shadow"
-            >
-              <p className="font-medium">{s.name}</p>
+            <div key={s._id} className="bg-white/5 rounded-xl px-4 py-3">
+              {s.name}
             </div>
           ))}
         </div>
       )}
 
-      {/* ==============================
-          🔥 MODAL
-      ============================== */}
       {showModal && (
-        <div className="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center px-4">
-          <div className="bg-[#111827] border border-white/10 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center">
+          <form
+            onSubmit={handleAdd}
+            className="bg-[#111827] p-6 rounded-xl w-full max-w-sm space-y-4"
+          >
+            <input
+              value={form.name}
+              onChange={(e) => setForm({ name: e.target.value })}
+              placeholder="Skill name"
+              className="w-full p-3 bg-white/10 rounded"
+            />
 
-            <h2 className="text-xl font-bold mb-4">
-              Add Skill
-            </h2>
-
-            <form onSubmit={handleAdd} className="space-y-4">
-
-              <input
-                type="text"
-                placeholder="Skill name"
-                value={form.name}
-                onChange={(e) =>
-                  setForm({ ...form, name: e.target.value })
-                }
-                className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/10 focus:ring-2 focus:ring-primary outline-none"
-                required
-              />
-
-              <button
-                type="submit"
-                className="w-full bg-primary py-3 rounded-lg font-semibold hover:scale-[1.02] transition shadow-lg"
-              >
-                Save
-              </button>
-            </form>
-
-            <button
-              onClick={() => setShowModal(false)}
-              className="mt-4 text-red-400 text-sm w-full"
-            >
-              Close
+            <button className="w-full bg-primary py-3 rounded">
+              Save
             </button>
-          </div>
+          </form>
         </div>
       )}
     </div>
